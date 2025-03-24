@@ -1,0 +1,6 @@
+# add files using terminal like this ⬇️
+# echo -e "node_modules/\n.env" >> .gitignore
+# echo -e -→ Enables interpretation of \n (new line).
+node_modules/
+.env
+
