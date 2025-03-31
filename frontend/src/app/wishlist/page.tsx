@@ -14,12 +14,10 @@ export default function WishlistPage() {
   const [newSectionName, setNewSectionName] = useState("");
   const [selectedSection, setSelectedSection] =
     useState<WishlistSection | null>(null);
-  const [newItemName, setNewItemName] = useState("");
-  const [newItemBrand, setNewItemBrand] = useState("");
-  const [newItemImage, setNewItemImage] = useState("");
   const [selectedSectionId, setSelectedSectionId] = useState<number | null>(
     null
   );
+  const [productLink, setProductLink] = useState("");
 
   // Load wishlist sections from localStorage
   useEffect(() => {
@@ -44,37 +42,6 @@ export default function WishlistPage() {
     };
     setSections([...sections, newSection]);
     setNewSectionName("");
-  };
-
-  // Add new item to section
-  const addNewItem = () => {
-    if (
-      !newItemName ||
-      !newItemBrand ||
-      !newItemImage ||
-      selectedSectionId === null
-    )
-      return;
-
-    const newItem: WishlistItem = {
-      id: Date.now(),
-      name: newItemName,
-      brand: newItemBrand,
-      image: newItemImage,
-    };
-
-    setSections((prevSections) =>
-      prevSections.map((section) =>
-        section.id === selectedSectionId
-          ? { ...section, items: [...section.items, newItem] }
-          : section
-      )
-    );
-
-    setNewItemName("");
-    setNewItemBrand("");
-    setNewItemImage("");
-    setSelectedSectionId(null);
   };
 
   // Remove item from section
@@ -121,6 +88,44 @@ export default function WishlistPage() {
       )
     );
   };
+
+  // MARK: Backend
+  // Connecting the Frontend to Fetch Product Data (route.ts)
+  const handleScrapeAndAdd = async () => {
+    if (!productLink || selectedSectionId === null) return;
+
+    try {
+      const response = await fetch(
+        `/api/scrape?url=${encodeURIComponent(productLink)}`
+      );
+      const data = await response.json();
+
+      if (!data.productName || !data.productImage) {
+        alert("Could not fetch product details.");
+        return;
+      }
+
+      const newItem: WishlistItem = {
+        id: Date.now(),
+        name: data.productName,
+        brand: data.productBrand || "Unknown",
+        image: data.productImage,
+      };
+
+      setSections((prevSections) =>
+        prevSections.map((section) =>
+          section.id === selectedSectionId
+            ? { ...section, items: [...section.items, newItem] }
+            : section
+        )
+      );
+
+      setProductLink(""); // Clear input field
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+    }
+  };
+
   return (
     <div className="container mx-auto p-6 min-h-screen">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">My Wishlist</h1>
@@ -145,25 +150,13 @@ export default function WishlistPage() {
       {/* Add Item Form */}
       <div className="mb-6 flex flex-col gap-2 bg-gray-100 p-4 rounded-lg">
         <h2 className="text-xl font-semibold mb-2">Add New Item</h2>
+      
         <input
           type="text"
-          placeholder="Product Name"
-          value={newItemName}
-          onChange={(e) => setNewItemName(e.target.value)}
-          className="p-2 border rounded"
-        />
-        <input
-          type="text"
-          placeholder="Brand Name"
-          value={newItemBrand}
-          onChange={(e) => setNewItemBrand(e.target.value)}
-          className="p-2 border rounded"
-        />
-        <input
-          type="text"
-          placeholder="Image URL"
-          value={newItemImage}
-          onChange={(e) => setNewItemImage(e.target.value)}
+          placeholder="Product Link"
+          style={{ fontStyle: "italic" }}
+          value={productLink}
+          onChange={(e) => setProductLink(e.target.value)}
           className="p-2 border rounded"
         />
         <select
@@ -178,8 +171,9 @@ export default function WishlistPage() {
             </option>
           ))}
         </select>
+
         <button
-          onClick={addNewItem}
+          onClick={handleScrapeAndAdd}
           className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
         >
           Add to Wishlist
