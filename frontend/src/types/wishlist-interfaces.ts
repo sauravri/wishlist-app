@@ -20,6 +20,7 @@ export interface WishlistSection {
 export interface SectionDashboardProps {
   section: WishlistSection;
   onClose: () => void;
+  onRenameSection: (sectionId: number, newName: string) => void;
   onRemoveItem: (sectionId: number, itemId: number) => void;
   onEditItem: (sectionId: number, updatedItem: WishlistItem) => void; // ✅ Fixed type definition
 }

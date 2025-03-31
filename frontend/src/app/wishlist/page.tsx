@@ -113,7 +113,14 @@ export default function WishlistPage() {
       )
     );
   };
-
+  // Rename Section
+  const renameSection = (sectionId: number, newName: string) => {
+    setSections((prevSections) =>
+      prevSections.map((section) =>
+        section.id === sectionId ? { ...section, name: newName } : section
+      )
+    );
+  };
   return (
     <div className="container mx-auto p-6 min-h-screen">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">My Wishlist</h1>
@@ -224,6 +231,7 @@ export default function WishlistPage() {
           onClose={() => setSelectedSection(null)}
           onRemoveItem={removeItem}
           onEditItem={editItem}
+          onRenameSection={renameSection}
         />
       )}
     </div>
