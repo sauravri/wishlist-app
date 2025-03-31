@@ -19,12 +19,14 @@ interface SectionDashboardProps {
   section: WishlistSection;
   onClose: () => void;
   onRemoveItem: (sectionId: number, itemId: number) => void;
+  onEditItem: (sectionId: number, updatedItem: WishlistItem) => void; // ✅ Fixed type definition
 }
 
 export default function SectionDashboard({
   section,
   onClose,
   onRemoveItem,
+  onEditItem, // ✅ Now correctly received
 }: SectionDashboardProps) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -34,7 +36,7 @@ export default function SectionDashboard({
           className="absolute top-4 left-4 px-3 py-1 bg-gray-300 rounded hover:bg-gray-400"
           onClick={onClose}
         >
-            <ArrowLeft size={24}/> 
+          <ArrowLeft size={24} />
         </button>
 
         {/* Section Title */}
@@ -42,14 +44,14 @@ export default function SectionDashboard({
           {section.name}
         </h2>
 
-        {/* Product Title */}
-        <div className="grid grid-cols- md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Wishlist Items Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {section.items.map((item) => (
             <WishlistCard
               key={item.id}
               item={item}
               onRemove={() => onRemoveItem(section.id, item.id)}
-              onEdit={() => {}} // ✅ Remove item
+              onEdit={(updatedItem) => onEditItem(section.id, updatedItem)} // ✅ Passed correctly
             />
           ))}
         </div>
