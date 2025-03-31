@@ -1,30 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
+
 import SectionDashboard from "@/components/SectionDashboard";
 
-interface WishlistItem {
-  id: number;
-  name: string;
-  brand: string;
-  image: string;
-}
+import WishlistCard from "@/components/WishlistCard";
 
-interface WishlistSection {
-  id: number;
-  name: string;
-  items: WishlistItem[];
-}
+import { WishlistItem, WishlistSection } from "@/types/wishlist-interfaces";
 
 export default function WishlistPage() {
+  // State variables for wishlist management
   const [sections, setSections] = useState<WishlistSection[]>([]);
   const [newSectionName, setNewSectionName] = useState("");
-  const [selectedSection, setSelectedSection] = useState<WishlistSection | null>(null);
+  const [selectedSection, setSelectedSection] =
+    useState<WishlistSection | null>(null);
   const [newItemName, setNewItemName] = useState("");
   const [newItemBrand, setNewItemBrand] = useState("");
   const [newItemImage, setNewItemImage] = useState("");
-  const [selectedSectionId, setSelectedSectionId] = useState<number | null>(null);
+  const [selectedSectionId, setSelectedSectionId] = useState<number | null>(
+    null
+  );
 
+  // Load wishlist sections from localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
       const savedSections = localStorage.getItem("wishlistSections");
@@ -32,25 +29,32 @@ export default function WishlistPage() {
     }
   }, []);
 
+  // Save wishlist sections to localStorage
   useEffect(() => {
     localStorage.setItem("wishlistSections", JSON.stringify(sections));
   }, [sections]);
 
+  // Add new section
   const addNewSection = () => {
     if (!newSectionName) return;
-
     const newSection: WishlistSection = {
       id: Date.now(),
       name: newSectionName,
       items: [],
     };
-
     setSections([...sections, newSection]);
     setNewSectionName("");
   };
 
+  // Add new item to section
   const addNewItem = () => {
-    if (!newItemName || !newItemBrand || !newItemImage || selectedSectionId === null) return;
+    if (
+      !newItemName ||
+      !newItemBrand ||
+      !newItemImage ||
+      selectedSectionId === null
+    )
+      return;
 
     const newItem: WishlistItem = {
       id: Date.now(),
@@ -73,20 +77,28 @@ export default function WishlistPage() {
     setSelectedSectionId(null);
   };
 
+  // Remove item from section
   const removeItem = (sectionId: number, itemId: number) => {
     setSections((prevSections) =>
       prevSections.map((section) =>
         section.id === sectionId
-          ? { ...section, items: section.items.filter((item) => item.id !== itemId) }
+          ? {
+              ...section,
+              items: section.items.filter((item) => item.id !== itemId),
+            }
           : section
       )
     );
   };
 
+  // Remove section
   const removeSection = (sectionId: number) => {
-    setSections((prevSections) => prevSections.filter((section) => section.id !== sectionId));
+    setSections((prevSections) =>
+      prevSections.filter((section) => section.id !== sectionId)
+    );
   };
 
+  // Edit an item in a section
   const editItem = (sectionId: number, updatedItem: WishlistItem) => {
     setSections((prevSections) =>
       prevSections.map((section) =>
@@ -103,28 +115,29 @@ export default function WishlistPage() {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">My Wishlist</h1>
-      
-      {/* Section Creation */}
-      <div className="mb-6 flex flex-col gap-2">
+    <div className="container mx-auto p-6 min-h-screen">
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">My Wishlist</h1>
+
+      {/* Add Section */}
+      <div className="mb-6 flex gap-4">
         <input
           type="text"
-          placeholder="Section Name (e.g., Nike Wishlist)"
+          placeholder="Enter section name"
           value={newSectionName}
           onChange={(e) => setNewSectionName(e.target.value)}
-          className="p-2 border rounded"
+          className="p-2 border rounded flex-grow"
         />
         <button
           onClick={addNewSection}
-          className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+          className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition"
         >
           Add Section
         </button>
       </div>
 
       {/* Add Item Form */}
-      <div className="mb-6 flex flex-col gap-2">
+      <div className="mb-6 flex flex-col gap-2 bg-gray-100 p-4 rounded-lg">
+        <h2 className="text-xl font-semibold mb-2">Add New Item</h2>
         <input
           type="text"
           placeholder="Product Name"
@@ -166,27 +179,45 @@ export default function WishlistPage() {
         </button>
       </div>
 
-      {/* Display Sections */}
-      {sections.map((section) => (
-        <div
-          key={section.id}
-          className="cursor-pointer p-4 border rounded-lg shadow-md hover:bg-gray-100"
-          onClick={() => setSelectedSection(section)}
-        >
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">{section.name}</h2>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              removeSection(section.id);
-            }}
-            className="mb-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+      {/* Wishlist Sections */}
+      <div className="space-y-6">
+        {sections.map((section) => (
+          <div
+            key={section.id}
+            className="p-4 border rounded-lg shadow-md bg-white cursor-pointer hover:bg-gray-100 transition"
+            onClick={() => setSelectedSection(section)} // 🔥 SectionDashboard onClick Handler
           >
-            X
-          </button>
-        </div>
-      ))}
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-semibold">{section.name}</h2>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation(); // 🔥 Prevents section click from triggering when removing
+                  removeSection(section.id);
+                }}
+                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
+              >
+                Remove
+              </button>
+            </div>
 
-      {/* Section Dashboard Modal */}
+            {/* Wishlist Items */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {section.items.map((item) => (
+                <WishlistCard
+                  key={item.id}
+                  item={item}
+                  onRemove={() => removeItem(section.id, item.id)}
+                  onEdit={(updatedItem: WishlistItem) =>
+                    editItem(section.id, updatedItem)
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Section Modal */}
       {selectedSection && (
         <SectionDashboard
           section={selectedSection}
