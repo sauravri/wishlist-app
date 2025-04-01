@@ -1,10 +1,10 @@
 "use client";
-
+import { MdOutlineDelete } from "react-icons/md";
 import { useState, useEffect } from "react";
-
+import Image from "next/image";
 import SectionDashboard from "@/components/SectionDashboard";
 
-import WishlistCard from "@/components/WishlistCard";
+// import WishlistCard from "@/components/WishlistCard";
 
 import { WishlistItem, WishlistSection } from "@/types/wishlist-interfaces";
 
@@ -110,6 +110,7 @@ export default function WishlistPage() {
         name: data.productName,
         brand: data.productBrand || "Unknown",
         image: data.productImage,
+        price: data.prodcutPrice,
       };
 
       setSections((prevSections) =>
@@ -150,7 +151,7 @@ export default function WishlistPage() {
       {/* Add Item Form */}
       <div className="mb-6 flex flex-col gap-2 bg-gray-100 p-4 rounded-lg">
         <h2 className="text-xl font-semibold mb-2">Add New Item</h2>
-      
+
         <input
           type="text"
           placeholder="Product Link"
@@ -188,29 +189,42 @@ export default function WishlistPage() {
             className="p-4 border rounded-lg shadow-md bg-white cursor-pointer hover:bg-gray-100 transition"
             onClick={() => setSelectedSection(section)} // 🔥 SectionDashboard onClick Handler
           >
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-semibold">{section.name}</h2>
+            <div className="flex justify-between">
+              <h2
+                className="text-xl font-semibold mb-2"
+                onClick={(e) => e.stopPropagation()} /* Stop propagation for section name. Fix: Prevent section onClick Event from Triggering on Child Elements
+
+                The issue happens because clicking anywhere inside the <div> fires onClick, including on images and the delete button.
+                
+                ✅ Solution:
+                Use onClick on a wrapper div and stop clicks from propagating from the child elements using e.stopPropagation(). */
+              >
+                {section.name}
+              </h2>
+
+              {/* Section delete button */}
               <button
                 onClick={(e) => {
-                  e.stopPropagation(); // 🔥 Prevents section click from triggering when removing
+                  e.stopPropagation(); // 🛑 Prevents the click from reaching the parent
                   removeSection(section.id);
                 }}
-                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                className="bg-gray-400 text-xs text-white w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-600 transition "
               >
-                Remove
+                <MdOutlineDelete size={20} />
               </button>
             </div>
 
-            {/* Wishlist Items */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {section.items.map((item) => (
-                <WishlistCard
+            {/* Display product images only */}
+            <div className="grid grid-cols-3 gap-2 items-center">
+              {section.items.slice(0, 4).map((item) => (
+                <Image
                   key={item.id}
-                  item={item}
-                  onRemove={() => removeItem(section.id, item.id)}
-                  onEdit={(updatedItem: WishlistItem) =>
-                    editItem(section.id, updatedItem)
-                  }
+                  src={item.image}
+                  alt={item.name}
+                  width={150}
+                  height={150}
+                  className="w-full h-48 object-cover rounded-md"
+                  onClick={(e) => e.stopPropagation()} // 🛑 Prevents opening modal when clicking an image
                 />
               ))}
             </div>

@@ -15,17 +15,16 @@ const WishlistCard: React.FC<WishlistCardProps> = ({
         <Image
           src={item.image || "/placeholder-image.jpg"}
           alt={item.name}
-          layout="responsive" // makes the image fill the entire width and height of its parent container. Use case: When you want the image to act as a background or fully cover a specific area.
-          width={500}
-          height={192}
-          className="w-full h-48 object-cover rounded-md"
+          width={150}
+          height={150}
+          className="w-full h-full object-cover rounded-md"
         />
       </div>
 
       {/* Item Details */}
       <div className="mt-4">
-        <h3 className="text-lg font-semibold text-gray-800">{item.name}</h3>
-        <p className="text-sm text-gray-600 font-medium">{item.brand}</p>
+        <h3 className="text font-semibold text-gray-800">{item.name}</h3>
+        <p className="text-sm text-gray-600 font-medium mt-2">{item.brand}</p>
       </div>
 
       {/* Action Buttons */}

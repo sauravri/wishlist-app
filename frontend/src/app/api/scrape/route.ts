@@ -16,10 +16,14 @@ export async function GET(req: NextRequest) {
 
     // Example selectors (Modify these based on the website structure)
     const productName = $("meta[property='og:title']").attr("content") || $("title").text();
+
     const productImage = $("meta[property='og:image']").attr("content");
+
     const productBrand = $("meta[property='og:site_name']").attr("content");
 
-    return NextResponse.json({ productName, productImage, productBrand });
+    const productPrice = $("meta[property='og:price-info']").attr("content");
+
+    return NextResponse.json({ productName, productImage, productBrand, productPrice });
   } 
   catch {
     return NextResponse.json({ error: "Failed to fetch product details" }, { status: 500 });

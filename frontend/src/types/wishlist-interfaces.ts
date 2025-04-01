@@ -5,6 +5,7 @@ export interface WishlistItem {
   name: string;
   brand: string;
   image: string; // No 'undefined' here!
+  price: string;
 }
 export interface WishlistCardProps {
   item: WishlistItem;
