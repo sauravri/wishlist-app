@@ -2,6 +2,8 @@
 import { MdOutlineDelete } from "react-icons/md";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { FiGrid } from "react-icons/fi";
+
 import SectionDashboard from "@/components/SectionDashboard";
 
 // import WishlistCard from "@/components/WishlistCard";
@@ -17,7 +19,13 @@ export default function WishlistPage() {
   const [selectedSectionId, setSelectedSectionId] = useState<number | null>(
     null
   );
+
+  // State variable for adding new item with link
   const [productLink, setProductLink] = useState("");
+
+  // Layout Grid state variables
+  const [layout, setLayout] = useState("grid-cols-3");
+  const [showLayoutOptions, setShowLayoutOptions] = useState(false);
 
   // Load wishlist sections from localStorage
   useEffect(() => {
@@ -46,17 +54,18 @@ export default function WishlistPage() {
 
   // Remove item from section
   const removeItem = (sectionId: number, itemId: number) => {
-    setSections((prevSections) =>
-      prevSections.map((section) =>
+    setSections((prevSections) => {
+      const updatedSections = prevSections.map((section) =>
         section.id === sectionId
-          ? {
-              ...section,
-              items: section.items.filter((item) => item.id !== itemId),
-            }
+          ? { ...section, items: section.items.filter((item) => item.id !== itemId) }
           : section
-      )
-    );
+      );
+  
+      return [...updatedSections]; // 🔥 Force state change
+    });
   };
+
+
 
   // Remove section
   const removeSection = (sectionId: number) => {
@@ -88,6 +97,9 @@ export default function WishlistPage() {
       )
     );
   };
+  
+  const updatedSelectedSection = sections.find((s) => s.id === selectedSection?.id);
+
 
   // MARK: Backend
   // Connecting the Frontend to Fetch Product Data (route.ts)
@@ -127,6 +139,7 @@ export default function WishlistPage() {
     }
   };
 
+  //MARK: Return
   return (
     <div className="container mx-auto p-6 min-h-screen">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">My Wishlist</h1>
@@ -136,6 +149,7 @@ export default function WishlistPage() {
         <input
           type="text"
           placeholder="Enter section name"
+          style={{ fontStyle: "italic" }}
           value={newSectionName}
           onChange={(e) => setNewSectionName(e.target.value)}
           className="p-2 border rounded flex-grow"
@@ -149,7 +163,7 @@ export default function WishlistPage() {
       </div>
 
       {/* Add Item Form */}
-      <div className="mb-6 flex flex-col gap-2 bg-gray-100 p-4 rounded-lg">
+      <div className="mb-6 flex flex-col gap-2 bg-gray-50 p-4 rounded-lg shadow-md ">
         <h2 className="text-xl font-semibold mb-2">Add New Item</h2>
 
         <input
@@ -165,7 +179,9 @@ export default function WishlistPage() {
           onChange={(e) => setSelectedSectionId(Number(e.target.value))}
           className="p-2 border rounded"
         >
-          <option value="">Select Section</option>
+          <option value="" style={{ fontStyle: "italic" }}>
+            Select Section
+          </option>
           {sections.map((section) => (
             <option key={section.id} value={section.id}>
               {section.name}
@@ -181,50 +197,75 @@ export default function WishlistPage() {
         </button>
       </div>
 
+      {/* Layout Toggle Button */}
+      <div className="flex justify-end mb-4">
+        <div className="relative">
+          <button
+            onClick={() => setShowLayoutOptions(!showLayoutOptions)}
+            className="w-8 h-8 flex items-center justify-center bg-gray-300 rounded-full hover:bg-gray-400 transition"
+          >
+            <FiGrid size={16} />
+          </button>
+
+          {/* Dropdown for Layout Selection */}
+          {showLayoutOptions && (
+            <div className="absolute right-0 mt-2 bg-white shadow-lg rounded-md p-2">
+              <button
+                onClick={() => setLayout("grid-cols-3")}
+                className="block px-4 py-2 text-sm hover:bg-gray-100"
+              >
+                3
+              </button>
+              <button
+                onClick={() => setLayout("grid-cols-3")}
+                className="block px-4 py-2 text-sm hover:bg-gray-100"
+              >
+                4
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+      {/* Sections Grid */}
+
       {/* Wishlist Sections */}
-      <div className="space-y-6">
+      <div className={`grid ${layout} gap-4 space-y-6`}>
         {sections.map((section) => (
           <div
             key={section.id}
-            className="p-4 border rounded-lg shadow-md bg-white cursor-pointer hover:bg-gray-100 transition"
-            onClick={() => setSelectedSection(section)} // 🔥 SectionDashboard onClick Handler
+            className="bg-white rounded-lg shadow-md p-4 cursor-pointer relative group"
+            onClick={(e) => {
+              const target = e.target as HTMLElement;
+              if (!target.closest(".prevent-click"))
+                setSelectedSection(section);
+            }}
           >
-            <div className="flex justify-between">
-              <h2
-                className="text-xl font-semibold mb-2"
-                onClick={(e) => e.stopPropagation()} /* Stop propagation for section name. Fix: Prevent section onClick Event from Triggering on Child Elements
+            {/* Section Header */}
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">{section.name}</h2>
 
-                The issue happens because clicking anywhere inside the <div> fires onClick, including on images and the delete button.
-                
-                ✅ Solution:
-                Use onClick on a wrapper div and stop clicks from propagating from the child elements using e.stopPropagation(). */
-              >
-                {section.name}
-              </h2>
-
-              {/* Section delete button */}
+              {/* Section Delete Button */}
               <button
                 onClick={(e) => {
-                  e.stopPropagation(); // 🛑 Prevents the click from reaching the parent
+                  e.stopPropagation();
                   removeSection(section.id);
                 }}
-                className="bg-gray-400 text-xs text-white w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-600 transition "
+                className="prevent-click bg-gray-400 text-xs text-white w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-600 transition"
               >
-                <MdOutlineDelete size={20} />
+                <MdOutlineDelete size={16} />
               </button>
             </div>
 
-            {/* Display product images only */}
-            <div className="grid grid-cols-3 gap-2 items-center">
+            {/* Product Images (Preview Only) */}
+            <div className="grid grid-cols-2 gap-2 mt-2">
               {section.items.slice(0, 4).map((item) => (
                 <Image
                   key={item.id}
                   src={item.image}
                   alt={item.name}
-                  width={150}
-                  height={150}
-                  className="w-full h-48 object-cover rounded-md"
-                  onClick={(e) => e.stopPropagation()} // 🛑 Prevents opening modal when clicking an image
+                  width={100}
+                  height={100}
+                  className="object-cover rounded-md"
                 />
               ))}
             </div>
@@ -233,9 +274,9 @@ export default function WishlistPage() {
       </div>
 
       {/* Section Modal */}
-      {selectedSection && (
+      {updatedSelectedSection  && (
         <SectionDashboard
-          section={selectedSection}
+          section={updatedSelectedSection }
           onClose={() => setSelectedSection(null)}
           onRemoveItem={removeItem}
           onEditItem={editItem}

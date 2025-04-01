@@ -27,6 +27,16 @@ export default function SectionDashboard({
     onRenameSection(section.id, newName); // 🔥 Update Parent State
     setIsEditing(false); // Exit edit mode
   };
+  
+  const [currentSection, setCurrentSection] = useState(section);
+
+  // 🔄 Update local state when `section` changes
+  useEffect(() => {
+    setCurrentSection(section);
+  }, [section]);
+   
+
+
 
   return (
     <div className="fixed inset-0 bg-black/80 flex justify-center items-center p-4 z-50">
@@ -47,12 +57,12 @@ export default function SectionDashboard({
               />
             ) : (
               <>
-                <h2 className="text-2xl font-bold text-gray-800">{newName}</h2>
+                <h2 className="text-4xl font-bold text-gray-800">{newName}</h2>
                 <button
                   onClick={() => setIsEditing(true)}
                   className="text-gray-600 hover:text-gray-800"
                 >
-                  <FiEdit size={15} />
+                  <FiEdit size={22} />
                 </button>
               </>
             )}
@@ -69,12 +79,12 @@ export default function SectionDashboard({
 
         {/* Wishlist Items Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {section.items.length > 0 ? (
-            section.items.map((item) => (
+          {currentSection.items.length > 0 ? (
+            currentSection.items.map((item) => (
               <WishlistCard
                 key={item.id}
                 item={item}
-                onRemove={() => onRemoveItem(section.id, item.id)}
+                onRemove={() => onRemoveItem(currentSection.id, item.id)}
                 onEdit={(updatedItem) => onEditItem(section.id, updatedItem)}
               />
             ))
